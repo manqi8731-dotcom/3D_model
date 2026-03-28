@@ -146,19 +146,57 @@ function renderModeling(activeIndex) {
 
 function updateModelingContent(item, idx) {
     const contentArea = document.getElementById('modeling-content');
+    if (!contentArea) return;
+
     contentArea.innerHTML = `<h2>${item.name}</h2>`;
 
+    // 1. 处理 3D 模型 (.glb)
     if (idx === 0) {
-        // 第一项：渲染 3D glb 文件 [cite: 18]
-        // 注意：根据文档，glb文件在github 
-        const modelName = item.images[0]; 
+        const modelName = item.images[0];
         const modelUrl = GITHUB_MODEL_BASE + modelName;
         contentArea.innerHTML += `
-            <model-viewer src="${modelUrl}" camera-controls auto-rotate alt="A 3D model of ${modelName}">
-            </model-viewer>
+            <model-viewer src="${modelUrl}" camera-controls auto-rotate shadow-intensity="1" ar></model-viewer>
+            <p style="margin-top:1rem; color:#666;">提示：左键旋转，右键平移，滚轮缩放。</p>
         `;
-    } else {
-        // 其他项：渲染图片与PDF网格 [cite: 19, 20, 21, 22]
+    } 
+    // 2. 特殊处理：02 PDF 页面（上方显示 04 的图，下方下载 02 的 PDF）
+    else if (item.name.includes("02刘氏宗祠CAD的pdf文件")) {
+        // 【关键点 1】：直接从第一层根目录找 “04补充图片”
+        const imgFolder = dbData.categories.find(c => c.name.includes("04补充图片"));
+
+        let html = `<div class="gallery-grid">`;
+        
+        // 【关键点 2】：遍历当前的 PDF 文件列表 (item 就是 02pdf 文件夹)
+        item.images.forEach((pdfFileName, i) => {
+            // 生成 PDF 的下载链接 (来自当前文件夹 02)
+            const pdfUrl = buildResourceUrl(item.relativePath, pdfFileName);
+            
+            // 生成图片的展示链接 (来自第一层的 04 文件夹，按索引 i 对应)
+            let imgUrl = "";
+            if (imgFolder && imgFolder.images && imgFolder.images[i]) {
+                imgUrl = buildResourceUrl(imgFolder.relativePath, imgFolder.images[i]);
+            }
+
+            // 提取纯名称（去掉后缀）
+            const displayName = pdfFileName.split('.')[0].trim();
+
+            html += `
+                <div class="gallery-item">
+                    <div class="img-container" style="height:200px; overflow:hidden; background:#eee; border-radius:4px 4px 0 0;">
+                        <img src="${imgUrl}" alt="${displayName}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/300x200?text=图片加载失败'">
+                    </div>
+                    <div class="img-name" style="padding:10px; font-weight:bold; border-bottom:1px solid #eee;">${displayName}</div>
+                    <div class="actions" style="padding:10px;">
+                        <a href="${pdfUrl}" download="${pdfFileName}" target="_blank" style="display:block; width:100%; text-align:center; background-color:#B87C4F; color:white; text-decoration:none; padding:8px 0; border-radius:4px;">下载 PDF 档</a>
+                    </div>
+                </div>`;
+        });
+        
+        html += `</div>`;
+        contentArea.innerHTML += html;
+    } 
+    // 3. 其他常规页面
+    else {
         contentArea.innerHTML += generateGalleryHtml(item);
     }
 }
