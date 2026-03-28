@@ -180,13 +180,21 @@ footer {
     margin-bottom: 0.5rem;
 }
 
-.gallery-item input[type="text"] {
+/* 修改为不可编辑的图片名称样式 */
+.gallery-item .img-name {
     width: 90%;
+    margin: 0 auto 0.5rem auto;
     padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border: 1px solid var(--accent-color);
+    font-size: 0.9rem;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    border: 1px solid #ddd;
     border-radius: 4px;
     text-align: center;
+    /* 核心逻辑：如果文件名太长，自动变成省略号，防止撑破卡片 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .gallery-item .actions a {
