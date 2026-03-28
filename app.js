@@ -61,29 +61,30 @@ function buildResourceUrl(relativePath, fileName) {
     return baseUrl + relativePath + fileName;
 }
 
-// 生成图片/文件网格卡片 [cite: 20, 21, 22]
-function generateGalleryHtml(itemObj, isDownloadOnly = false) {
+// 生成图片/文件网格卡片
+function generateGalleryHtml(itemObj) {
     if(!itemObj || !itemObj.images || itemObj.images.length === 0) return '<p>暂无文件</p>';
     
     let html = `<div class="gallery-grid">`;
     itemObj.images.forEach((fileName, index) => {
         const fullUrl = buildResourceUrl(itemObj.relativePath, fileName);
         const fileExt = fileName.split('.').pop().toLowerCase();
+        const displayName = fileName.split('.')[0]; // 去掉后缀名作为展示名称
         
         html += `<div class="gallery-item">`;
         
         if (fileExt === 'pdf') {
             html += `<img src="https://via.placeholder.com/200x150?text=PDF+Document" alt="PDF">`;
         } else {
-            // 图片预览
+            // 图片展示
             html += `<img src="${fullUrl}" alt="${fileName}" loading="lazy">`;
         }
         
-        // 底部文本框与按钮 [cite: 20]
+        // 【修改点】：将 input 替换为普通的 div 标签，彻底禁止用户编辑
+        // 【修改点】：直接去掉“在线预览”按钮，仅保留“下载”
         html += `
-            <input type="text" value="${fileName.split('.')[0]}" placeholder="图片名称">
+            <div class="img-name" title="${displayName}">${displayName}</div>
             <div class="actions">
-                ${fileExt !== 'pdf' ? <a href="javascript:void(0)" onclick="openPreview('${fullUrl}')">在线预览</a> : ''}
                 <a href="${fullUrl}" download="${fileName}" target="_blank">下载</a>
             </div>
         </div>`;
@@ -91,7 +92,6 @@ function generateGalleryHtml(itemObj, isDownloadOnly = false) {
     html += `</div>`;
     return html;
 }
-
 // --- 页面渲染函数 ---
 
 // 1. 首页渲染 [cite: 13, 14, 15, 16]
